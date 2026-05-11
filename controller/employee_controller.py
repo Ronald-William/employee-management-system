@@ -38,7 +38,7 @@ def create(employee: EmployeeCreate, service: EmployeeService = Depends(get_empl
     return service.create(employee)
 
 
-@employee_route.put("/employee_id}", response_model=EmployeeResponse, dependencies=[Depends(get_admin_user)])
+@employee_route.patch("/employee_id}", response_model=EmployeeResponse, dependencies=[Depends(get_admin_user)])
 def update(employee_id: int, employee: EmployeeUpdate, service: EmployeeService = Depends(get_employee_service)):
     data_to_update = employee.model_dump(exclude_unset=True)
     result = service.update(employee_id, data_to_update)
