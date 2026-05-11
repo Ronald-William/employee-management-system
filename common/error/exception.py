@@ -24,4 +24,11 @@ class ForbiddenException(Exception):
         self.detail = "You do not have permission to perform this action."
         super().__init__(self.detail)
     
+
+class ValidationException(Exception):
+    def __init__(self, detail: str):
+        self.status_code = status.HTTP_400_BAD_REQUEST
+        self.detail = detail
+        super().__init__(self.detail)
         
+    

@@ -6,7 +6,7 @@ from fastapi import Response
 from application.model.auth_model import TokenResponse
 from common.config.jwt_config import JwtConfig
 from common.middleware.logger import logger
-from common.error.exception import ConflictException, AuthException
+from common.error.exception import ConflictException, AuthException, ValidationException
 import string 
 
 password_hash = PasswordHash.recommended()
@@ -16,19 +16,23 @@ class AuthService:
         self.repository = UserRepository(db) 
 
     def validate_password(self, password: str):
-        valid_len = True if len(password) >=8 else False
-        
-        has_upper = any(char.isupper() for char in password)
-        has_lower = any(char.islower() for char in password)
-        has_digit = any(char.isdigit() for char in password)
-        has_special = any(char in string.punctuation for char in password)
-        return valid_len and has_lower and has_upper and has_digit and has_special
+        error = []
+        if len(password) < 8:
+            error.append("at least 8 characters")
+        if not (any(char.isupper() for char in password)):
+            error.append("one uppercase character")
+        if not (any(char.islower() for char in password)):
+            error.append("one lowercase character")
+        if not (any(char.isdigit() for char in password)):
+            error.append("one digit")
+        if not (any(char in string.punctuation for char in password)):
+            error.append("one special character")
+        if error:
+            raise ValidationException(f"Password must contain: {', '.join(error)}")
     
     def register(self, email: str, password: str):
         existing = self.repository.get_by_email(email)
-        valid_password = self.validate_password(password)
-        if not valid_password:
-            return {"message" : "Password requirements not met", "requirements" : "Password must contain alteast 8 characters, one lowercase character, one uppercase character, one special_character and one digit"}
+        self.validate_password(password)
         if existing:
             logger.warning(f"Registration failed: Email {email} already exists.")
             raise ConflictException("email", email)

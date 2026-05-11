@@ -1,4 +1,4 @@
-from common.error.exception import NotFoundException, ConflictException, AuthException, ForbiddenException
+from common.error.exception import NotFoundException, ConflictException, AuthException, ForbiddenException, ValidationException
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from fastapi import FastAPI, Request, status
@@ -28,10 +28,15 @@ def unhandled_exception_handler(request: Request, exc: Exception)->JSONResponse:
 def forbidden_handler(request: Request, exc: ForbiddenException) -> JSONResponse:
     return error_response(exc.status_code, exc.detail)
 
+def validation_exception_handler(request: Request, exc: ValidationException)->JSONResponse:
+    return error_response(exc.status_code, exc.detail)
+
 def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(NotFoundException, not_found_handler)
     app.add_exception_handler(ConflictException, conflict_handler)
     app.add_exception_handler(AuthException, auth_exception_handler)
     app.add_exception_handler(IntegrityError, integrity_error_handler)
     app.add_exception_handler(ForbiddenException, forbidden_handler)
-    app.add_exception_handler(Exception, unhandled_exception_handler)
+    app.add_exception_handler(ValidationException, validation_exception_handler)
+    app.add_exception_handler(Exception, unhandled_exception_handler)   
+    
